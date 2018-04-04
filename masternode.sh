@@ -58,7 +58,7 @@ function get_latest_released_tag() {
 }
 
 function stop_xsncore () {
-    ps aux | grep xsnd | grep -v grep | awk '{print $2}' | xargs kill
+    ps aux | grep xsnd | grep -v grep | awk '{print $2}' | xargs kill -9
 }
 
 function download_last_release_version () {
