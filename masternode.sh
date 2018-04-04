@@ -85,7 +85,7 @@ function update () {
 
     get_latest_released_tag
 
-#    stop_xsncore
+    stop_xsncore
 
     download_last_release_version
 
@@ -101,6 +101,8 @@ function usage () {
 	echo -e "\nUsage:\n$0 [arguments]\n";
     echo "";
     echo "[update] = Updates your Masternodes";
+    echo "";
+    echo "Example: bash masternode.sh update";
     echo "";
     echo "";
 	exit 1
