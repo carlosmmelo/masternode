@@ -21,7 +21,7 @@ declare XSNCORE_PATH=${XSNCORE_PATH:-$HOME/.xsncore}
 
 
 # ======================================================================================================================
-# FUNCTIONS - JENKINS
+# FUNCTIONS
 # ======================================================================================================================
 
 function setup_jq () {
@@ -58,7 +58,7 @@ function get_latest_released_tag() {
 }
 
 function stop_xsncore () {
-    ${XSNCORE_PATH}/xsn-cli stop
+    ps aux | grep xsnd | grep -v grep | awk '{print $2}' | xargs kill
 }
 
 function download_last_release_version () {
@@ -68,15 +68,20 @@ function download_last_release_version () {
 
 function update_xsn_with_latest_version () {
     __COMPRESSED_NAME=$( "${PATH_JQ}" -r ".assets[0].name" "${FILE_CURL_OUT}" )
-    __UNCOMPRESSED_NAME=$( echo "${__COMPRESSED_NAME//-linux64.tar.gz}")
+    UNCOMPRESSED_NAME=$( echo "${__COMPRESSED_NAME//-linux64.tar.gz}")
     tar xfvz ${__COMPRESSED_NAME}
-    cp ${__UNCOMPRESSED_NAME}/bin/xsnd ${XSNCORE_PATH}
-    cp ${__UNCOMPRESSED_NAME}/bin/xsn-cli ${XSNCORE_PATH}
+    cp ${UNCOMPRESSED_NAME}/bin/xsnd ${XSNCORE_PATH}
+    cp ${UNCOMPRESSED_NAME}/bin/xsn-cli ${XSNCORE_PATH}
     chmod 777 ${XSNCORE_PATH}/xsn*
 }
 
 function start_xsncore () {
     ${XSNCORE_PATH}/xsnd -reindex
+}
+
+function clean_up () {
+    [ -f "${FILE_CURL_OUT}" ] && rm -rf "${FILE_CURL_OUT}"
+    [ -d "${UNCOMPRESSED_NAME}" ] && rm -rf "${UNCOMPRESSED_NAME}"*
 }
 
 function update () {
@@ -92,6 +97,8 @@ function update () {
     update_xsn_with_latest_version
 
     start_xsncore
+
+    clean_up
 }
 
 # The script will terminate after the first line that fails (returns nonzero exit code)
@@ -100,7 +107,7 @@ set -e
 function usage () {
 	echo -e "\nUsage:\n$0 [arguments]\n";
     echo "";
-    echo "[update] = Updates your Masternodes";
+    echo "[update] = Updates and starts your Masternode";
     echo "";
     echo "Example: bash masternode.sh update";
     echo "";
