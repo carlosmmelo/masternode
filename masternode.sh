@@ -75,7 +75,7 @@ function update_xsn_with_latest_version () {
     chmod 777 ${XSNCORE_PATH}/xsn*
 }
 
-function start_xsncore () {
+function start () {
     ${XSNCORE_PATH}/xsnd -reindex
 }
 
@@ -96,7 +96,7 @@ function update () {
 
     update_xsn_with_latest_version
 
-    start_xsncore
+    start
 
     clean_up
 }
@@ -107,7 +107,8 @@ set -e
 function usage () {
 	echo -e "\nUsage:\n$0 [arguments]\n";
     echo "";
-    echo "[update] = Updates and starts your Masternode";
+    echo "[update] = Updates and Starts your Masternode";
+    echo "[start] = Start XSN Daemon only";
     echo "";
     echo "Example: bash masternode.sh update";
     echo "";
@@ -115,12 +116,8 @@ function usage () {
 	exit 1
 }
 
-if [[ -z $(echo ${1} | grep -e "\(update\)") ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ ${#} -eq 0 ]] || [[ ${#} -gt 1 ]]; then
-    usage
-fi
-
 case $1 in
-	(update)
+	update|start)
 		cmd=$1 # Command is first arg
 		shift
 		$cmd $@ # Pass all the rest of args to the command
