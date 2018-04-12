@@ -154,7 +154,7 @@ function execute_sentinel () {
 
     create_sentinel_setup
 
-    start_sentinel
+    #start_sentinel
 
     set_sentinel_cron
 }
