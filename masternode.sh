@@ -21,7 +21,6 @@ declare XSNCORE_PATH=${XSNCORE_PATH:-$HOME/.xsncore}
 
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
-declare -r MNODE_CONF_PATH=~/.xsncore
 
 
 # ======================================================================================================================
@@ -127,23 +126,23 @@ function create_sentinel_setup () {
     # setup sentinel config file
     if [ ! -f "/usr/share/sentinel/xsn_sentinel.conf" ]; then
          echo "* Creating sentinel configuration for XSN masternode"    &>> ${SCRIPT_LOGFILE}
-         echo "xsn_conf=${MNODE_CONF_PATH}/xsn.conf"                    > /usr/share/sentinel/xsn_sentinel.conf
+         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                    > /usr/share/sentinel/xsn_sentinel.conf
          echo "network=mainnet"                                         >> /usr/share/sentinel/xsn_sentinel.conf
          echo "db_name=database/xsn_sentinel.db"                        >> /usr/share/sentinel/xsn_sentinel.conf
          echo "db_driver=sqlite"                                        >> /usr/share/sentinel/xsn_sentinel.conf
     fi
 	done
     echo "Generated a Sentinel config for you. To activate Sentinel run"
-    echo "export SENTINEL_CONFIG=${MNODE_CONF_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py"
+    echo "export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py"
     echo ""
     echo "If it works, add the command as cronjob:  "
-    echo "* * * * * export SENTINEL_CONFIG=${MNODE_CONF_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py 2>&1 >> /var/log/sentinel/sentinel-cron.log"
+    echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py 2>&1 >> /var/log/sentinel/sentinel-cron.log"
 }
 
 function execute_sentinel () {
     create_sentinel_setup
 
-    export SENTINEL_CONFIG=${MNODE_CONF_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py
+    export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py
     * * * * * cd /usr/share/sentinel && /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py >/dev/null 2>&1 >> /var/log/sentinel/sentinel-cron.log
 }
 
