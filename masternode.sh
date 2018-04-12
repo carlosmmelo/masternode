@@ -143,7 +143,7 @@ function execute_sentinel () {
     create_sentinel_setup
 
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py
-    * * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> /var/log/sentinel/sentinel-cron.log
+    * * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> /var/log/sentinel/sentinel-cron.log &
 }
 
 # The script will terminate after the first line that fails (returns nonzero exit code)
