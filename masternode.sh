@@ -138,12 +138,6 @@ function create_sentinel_setup () {
          echo "db_name=database/xsn_sentinel.db"                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
          echo "db_driver=sqlite"                                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
     fi
-
-    echo "Generated a Sentinel config for you. To activate Sentinel run"
-    echo "export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py"
-    echo ""
-    echo "If it works, add the command as cronjob:  "
-    echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py 2>&1 >> /var/log/sentinel/sentinel-cron.log"
 }
 
 function execute_sentinel () {
@@ -153,7 +147,7 @@ function execute_sentinel () {
     create_sentinel_setup
 
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
-    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | crontab - >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log
+    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log") | crontab -
 }
 
 function usage () {
