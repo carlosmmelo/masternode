@@ -140,14 +140,23 @@ function create_sentinel_setup () {
     fi
 }
 
+function start_sentinel () {
+    export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
+}
+
+function set_sentinel_cron () {
+    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
+}
+
 function execute_sentinel () {
 
     stop_sentinel
 
     create_sentinel_setup
 
-    export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
-    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
+    start_sentinel
+
+    set_sentinel_cron
 }
 
 function usage () {
