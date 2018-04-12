@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# The script will terminate after the first line that fails (returns nonzero exit code)
+set -e
+
 # ======================================================================================================================
 # CONFIGURATION
 # ======================================================================================================================
@@ -152,9 +155,6 @@ function execute_sentinel () {
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
     * * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log
 }
-
-# The script will terminate after the first line that fails (returns nonzero exit code)
-set -e
 
 function usage () {
 	echo -e "\nUsage:\n$0 [arguments]\n";
