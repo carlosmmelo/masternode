@@ -131,7 +131,7 @@ function create_sentinel_setup () {
          echo "db_name=database/xsn_sentinel.db"                        >> /usr/share/sentinel/xsn_sentinel.conf
          echo "db_driver=sqlite"                                        >> /usr/share/sentinel/xsn_sentinel.conf
     fi
-	done
+	
     echo "Generated a Sentinel config for you. To activate Sentinel run"
     echo "export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py"
     echo ""
