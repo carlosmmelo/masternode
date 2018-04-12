@@ -108,7 +108,7 @@ function update () {
 }
 
 function stop_sentinel () {
-    ps aux | grep sentinel | grep -v grep | awk '{print $2}' | xargs kill -9
+    if pgrep sentinel &> /dev/null ; then sudo killall sentinel ; fi
 }
 
 #
