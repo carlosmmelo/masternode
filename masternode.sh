@@ -146,7 +146,7 @@ function create_sentinel_setup () {
 function execute_sentinel () {
 
     stop_sentinel
-    
+
     create_sentinel_setup
 
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
