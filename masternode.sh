@@ -109,41 +109,41 @@ function update () {
 #
 function create_sentinel_setup () {
 	# if code directory does not exists, proceed to clone sentinel repo
-	if [ ! -d /usr/share/sentinel ]; then
-		cd /usr/share                                               &>> ${SCRIPT_LOGFILE}
+	if [ ! -d ${XSNCORE_PATH}/sentinel ]; then
+		cd ${XSNCORE_PATH}                                          &>> ${SCRIPT_LOGFILE}
 		git clone https://github.com/carlosmmelo/sentinel sentinel  &>> ${SCRIPT_LOGFILE}
 		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
 		rm -f rm sentinel.conf                                      &>> ${SCRIPT_LOGFILE}
 	else
 		echo "* Updating the existing sentinel GIT repo"
-		cd /usr/share/sentinel        &>> ${SCRIPT_LOGFILE}
+		cd ${XSNCORE_PATH}/sentinel   &>> ${SCRIPT_LOGFILE}
 		git pull                      &>> ${SCRIPT_LOGFILE}
 		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
 	fi
 	# create a python virtual environment and install sentinel requirements
-	virtualenv --system-site-packages /usr/share/sentinelvenv      &>> ${SCRIPT_LOGFILE}
-	/usr/share/sentinelvenv/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
+	virtualenv --system-site-packages ${XSNCORE_PATH}/sentinelvenv      &>> ${SCRIPT_LOGFILE}
+	${XSNCORE_PATH}/sentinelvenv/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
     # setup sentinel config file
-    if [ ! -f "/usr/share/sentinel/xsn_sentinel.conf" ]; then
-         echo "* Creating sentinel configuration for XSN masternode"    &>> ${SCRIPT_LOGFILE}
-         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                    > /usr/share/sentinel/xsn_sentinel.conf
-         echo "network=mainnet"                                         >> /usr/share/sentinel/xsn_sentinel.conf
-         echo "db_name=database/xsn_sentinel.db"                        >> /usr/share/sentinel/xsn_sentinel.conf
-         echo "db_driver=sqlite"                                        >> /usr/share/sentinel/xsn_sentinel.conf
+    if [ ! -f "${XSNCORE_PATH}/sentinel/xsn_sentinel.conf" ]; then
+         echo "* Creating sentinel configuration for XSN Masternode"    &>> ${SCRIPT_LOGFILE}
+         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                       > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "network=mainnet"                                         >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_name=database/xsn_sentinel.db"                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_driver=sqlite"                                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
     fi
 
     echo "Generated a Sentinel config for you. To activate Sentinel run"
-    echo "export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py"
+    echo "export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py"
     echo ""
     echo "If it works, add the command as cronjob:  "
-    echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py 2>&1 >> /var/log/sentinel/sentinel-cron.log"
+    echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py 2>&1 >> /var/log/sentinel/sentinel-cron.log"
 }
 
 function execute_sentinel () {
     create_sentinel_setup
 
-    export SENTINEL_CONFIG=${XSNCORE_PATH}/xsn_sentinel.conf; /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py
-    * * * * * cd /usr/share/sentinel && /usr/share/sentinelvenv/bin/python /usr/share/sentinel/bin/sentinel.py >/dev/null 2>&1 >> /var/log/sentinel/sentinel-cron.log
+    export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py
+    * * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> /var/log/sentinel/sentinel-cron.log
 }
 
 # The script will terminate after the first line that fails (returns nonzero exit code)
