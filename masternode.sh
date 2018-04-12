@@ -145,7 +145,7 @@ function start_sentinel () {
 }
 
 function set_sentinel_cron () {
-    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
+    (crontab -l 2>/dev/null; echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
 }
 
 function execute_sentinel () {
