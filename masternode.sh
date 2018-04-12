@@ -104,6 +104,10 @@ function update () {
     clean_up
 }
 
+function stop_sentinel () {
+    ps aux | grep sentinel | grep -v grep | awk '{print $2}' | xargs kill -9
+}
+
 #
 # /* no parameters, creates a sentinel config for a set of masternodes (one per masternode)  */
 #
@@ -140,6 +144,9 @@ function create_sentinel_setup () {
 }
 
 function execute_sentinel () {
+
+    stop_sentinel
+    
     create_sentinel_setup
 
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
