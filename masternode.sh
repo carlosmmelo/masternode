@@ -144,7 +144,7 @@ function create_sentinel_setup () {
 function start_sentinel () {
     echo "* Starting Sentinel - WATCHDOG ..."
     cd ${XSNCORE_PATH}/sentinel
-    export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; export SENTINEL_DEBUG=1; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
+    SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
 }
 
 function set_sentinel_cron () {
