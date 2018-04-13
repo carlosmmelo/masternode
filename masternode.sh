@@ -144,12 +144,12 @@ function create_sentinel_setup () {
 function start_sentinel () {
     echo "* Starting Sentinel - WATCHDOG ..."
     cd ${XSNCORE_PATH}/sentinel
-    SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
+    SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log
 }
 
 function set_sentinel_cron () {
     echo "* Creating Cron Job to run Sentinel WatchDog's keep alive every minute"
-    (crontab -l 2>/dev/null; echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; export SENTINEL_DEBUG=1; cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
+    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel; SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log") | sort - | uniq - | crontab -
 }
 
 function execute_sentinel () {
