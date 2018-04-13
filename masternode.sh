@@ -108,15 +108,14 @@ function update () {
 }
 
 function stop_sentinel () {
+    echo "* Closing Sentinel if running"
     if pgrep sentinel &> /dev/null ; then sudo killall sentinel ; fi
 }
 
-#
-# /* no parameters, creates a sentinel config for a set of masternodes (one per masternode)  */
-#
 function create_sentinel_setup () {
 	# if code directory does not exists, proceed to clone sentinel repo
 	if [ ! -d ${XSNCORE_PATH}/sentinel ]; then
+	    echo "* Cloning Sentinel repo"
 		cd ${XSNCORE_PATH}                                          &>> ${SCRIPT_LOGFILE}
 		git clone https://github.com/carlosmmelo/sentinel sentinel  &>> ${SCRIPT_LOGFILE}
 		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
@@ -127,10 +126,12 @@ function create_sentinel_setup () {
 		git pull                      &>> ${SCRIPT_LOGFILE}
 		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
 	fi
-	# create a python virtual environment and install sentinel requirements
+
+	echo "* Create a python virtual environment and install sentinel requirements"
 	virtualenv --system-site-packages ${XSNCORE_PATH}/sentinelvenv      &>> ${SCRIPT_LOGFILE}
 	${XSNCORE_PATH}/sentinelvenv/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
-    # setup sentinel config file
+
+    echo "* Setting up Sentinel config file if not present"
     if [ ! -f "${XSNCORE_PATH}/sentinel/xsn_sentinel.conf" ]; then
          echo "* Creating sentinel configuration for XSN Masternode"    &>> ${SCRIPT_LOGFILE}
          echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                       > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
@@ -141,11 +142,13 @@ function create_sentinel_setup () {
 }
 
 function start_sentinel () {
+    echo "* Starting Sentinel - WATCHDOG ..."
     export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py &
 }
 
 function set_sentinel_cron () {
-    (crontab -l 2>/dev/null; echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1") | sort - | uniq - | crontab -
+    echo "* Creating Cron Job to run Sentinel WatchDog's keep alive every minute"
+    (crontab -l 2>/dev/null; echo "* * * * * export SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf; cd ${XSNCORE_PATH}/sentinel && ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log") | sort - | uniq - | crontab -
 }
 
 function execute_sentinel () {
@@ -157,6 +160,8 @@ function execute_sentinel () {
     #start_sentinel
 
     set_sentinel_cron
+
+    echo "*** Done Executing Sentinel ***"
 }
 
 function usage () {
