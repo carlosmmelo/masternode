@@ -133,11 +133,11 @@ function create_sentinel_setup () {
 
     echo "* Setting up Sentinel config file if not present"
     if [ ! -f "${XSNCORE_PATH}/sentinel/xsn_sentinel.conf" ]; then
-         echo "* Creating sentinel configuration for XSN Masternode"    &>> ${SCRIPT_LOGFILE}
-         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                       > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
-         echo "network=mainnet"                                         >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
-         echo "db_name=database/xsn_sentinel.db"                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
-         echo "db_driver=sqlite"                                        >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "* Creating sentinel configuration for XSN Masternode"        &>> ${SCRIPT_LOGFILE}
+         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                           > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "network=mainnet"                                             >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_name=${XSNCORE_PATH}/sentinel/database/xsn_sentinel.db"   >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_driver=sqlite"                                            >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
     fi
 }
 
