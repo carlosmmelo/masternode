@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# The script will terminate after the first line that fails (returns nonzero exit code)
+set -e
+
 # ======================================================================================================================
 # CONFIGURATION
 # ======================================================================================================================
@@ -18,6 +21,9 @@ fi
 declare XSNCORE_URL="https://api.github.com/repos/X9Developers/XSN/releases/latest"
 declare FILE_CURL_OUT="curl.out"
 declare XSNCORE_PATH=${XSNCORE_PATH:-$HOME/.xsncore}
+
+declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
+declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
 
 
 # ======================================================================================================================
@@ -101,14 +107,70 @@ function update () {
     clean_up
 }
 
-# The script will terminate after the first line that fails (returns nonzero exit code)
-set -e
+function stop_sentinel () {
+    echo "* Closing Sentinel if running"
+    if pgrep sentinel &> /dev/null ; then sudo killall sentinel ; fi
+}
+
+function create_sentinel_setup () {
+	# if code directory does not exists, proceed to clone sentinel repo
+	if [ ! -d ${XSNCORE_PATH}/sentinel ]; then
+	    echo "* Sentinel Repo NOT Present - *** Cloning Sentinel repo ***"
+		cd ${XSNCORE_PATH}                                          &>> ${SCRIPT_LOGFILE}
+		git clone https://github.com/carlosmmelo/sentinel sentinel  &>> ${SCRIPT_LOGFILE}
+		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
+		rm -f rm sentinel.conf                                      &>> ${SCRIPT_LOGFILE}
+	else
+		echo "* Sentinel Repo is Present - Updating the existing Sentinel GIT repo"
+		cd ${XSNCORE_PATH}/sentinel   &>> ${SCRIPT_LOGFILE}
+		git pull                      &>> ${SCRIPT_LOGFILE}
+		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
+	fi
+
+	echo "* Create a python virtual environment and install sentinel requirements"
+	virtualenv --system-site-packages ${XSNCORE_PATH}/sentinelvenv      &>> ${SCRIPT_LOGFILE}
+	${XSNCORE_PATH}/sentinelvenv/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
+
+    echo "* Setting up Sentinel config file if not present"
+    if [ ! -f "${XSNCORE_PATH}/sentinel/xsn_sentinel.conf" ]; then
+         echo "* Creating sentinel configuration for XSN Masternode"        &>> ${SCRIPT_LOGFILE}
+         echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                           > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "network=mainnet"                                             >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_name=${XSNCORE_PATH}/sentinel/database/xsn_sentinel.db"   >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+         echo "db_driver=sqlite"                                            >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
+    fi
+}
+
+function start_sentinel () {
+    echo "* Starting Sentinel - WATCHDOG ..."
+    cd ${XSNCORE_PATH}/sentinel
+    SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log
+}
+
+function set_sentinel_cron () {
+    echo "* Creating Cron Job to run Sentinel WatchDog's keep alive every minute"
+    (crontab -l 2>/dev/null; echo "* * * * * cd ${XSNCORE_PATH}/sentinel; SENTINEL_CONFIG=${XSNCORE_PATH}/sentinel/xsn_sentinel.conf SENTINEL_DEBUG=1 ${XSNCORE_PATH}/sentinelvenv/bin/python ${XSNCORE_PATH}/sentinel/bin/sentinel.py >/dev/null 2>&1 >> ${XSNCORE_PATH}/sentinel/sentinel-cron.log") | sort - | uniq - | crontab -
+}
+
+function execute_sentinel () {
+
+    stop_sentinel
+
+    create_sentinel_setup
+
+    start_sentinel
+
+    set_sentinel_cron
+
+    echo "*** Done Executing Sentinel (WatchDog) ***"
+}
 
 function usage () {
 	echo -e "\nUsage:\n$0 [arguments]\n";
     echo "";
     echo "[update] = Updates and Starts your Masternode";
     echo "[start] = Start XSN Daemon only";
+    echo "[execute_sentinel] = Create and Start Sentinel";
     echo "";
     echo "Example: bash masternode.sh update";
     echo "";
@@ -117,7 +179,7 @@ function usage () {
 }
 
 case $1 in
-	update|start)
+	update|start|execute_sentinel)
 		cmd=$1 # Command is first arg
 		shift
 		$cmd $@ # Pass all the rest of args to the command
