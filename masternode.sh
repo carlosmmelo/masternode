@@ -115,13 +115,13 @@ function stop_sentinel () {
 function create_sentinel_setup () {
 	# if code directory does not exists, proceed to clone sentinel repo
 	if [ ! -d ${XSNCORE_PATH}/sentinel ]; then
-	    echo "* Cloning Sentinel repo"
+	    echo "* Sentinel Repo NOT Present - *** Cloning Sentinel repo ***"
 		cd ${XSNCORE_PATH}                                          &>> ${SCRIPT_LOGFILE}
 		git clone https://github.com/carlosmmelo/sentinel sentinel  &>> ${SCRIPT_LOGFILE}
 		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
 		rm -f rm sentinel.conf                                      &>> ${SCRIPT_LOGFILE}
 	else
-		echo "* Updating the existing sentinel GIT repo"
+		echo "* Sentinel Repo is Present - Updating the existing Sentinel GIT repo"
 		cd ${XSNCORE_PATH}/sentinel   &>> ${SCRIPT_LOGFILE}
 		git pull                      &>> ${SCRIPT_LOGFILE}
 		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
@@ -161,7 +161,7 @@ function execute_sentinel () {
 
     set_sentinel_cron
 
-    echo "*** Done Executing Sentinel ***"
+    echo "*** Done Executing Sentinel (WatchDog) ***"
 }
 
 function usage () {
