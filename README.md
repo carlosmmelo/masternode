@@ -33,19 +33,23 @@ XSNCORE_PATH=your_xsncore_dir_path bash masternode.sh update
 
 ### Prerequisite:
 
-In order for Sentinel to be able to connect to XSN network, you have to add the following into `xsn.conf`:
+In order for Sentinel to be able to connect to XSN network, you have to add the following into `xsn.conf` (use nano to edit the file):
 ```
 rpcport=9998
 ```
 Please note that everytime you update `xsn.conf` file you MUST restart your Masternode in order for the new update take effect.
 
-To restart your simply stop XSN:
+To restart, simply kill xsnd:
 ```
-~/.xsncore/xsn-cli stop
+ps aux | grep xsnd | grep -v grep | awk '{print $2}' | xargs kill -9
 ```
 And then start it again:
 ```
 ~/.xsncore/xsnd --reindex
+```
+**WAIT** for it to sync (AssetID should reach 999):
+```
+~/.xsncore/xsn-cli mnsync status
 ```
 
 If you already have `rpcport=9998` in your `xsn.conf` file, you just need to proceed with Sentinel installation and execution.
