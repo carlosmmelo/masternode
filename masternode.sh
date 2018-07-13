@@ -73,7 +73,7 @@ function download_last_release_version () {
 }
 
 function update_xsn_with_latest_version () {
-    __COMPRESSED_NAME=$( "${PATH_JQ}" -r ".assets[0].name" "${FILE_CURL_OUT}" )
+    __COMPRESSED_NAME=$( "${PATH_JQ}" -r ".assets[1].name" "${FILE_CURL_OUT}" )
     UNCOMPRESSED_NAME=$( echo "${__COMPRESSED_NAME//-linux64.tar.gz}")
     tar xfvz ${__COMPRESSED_NAME}
     cp ${UNCOMPRESSED_NAME}/bin/xsnd ${XSNCORE_PATH}
