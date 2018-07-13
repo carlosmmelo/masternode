@@ -59,7 +59,7 @@ function get_latest_released_tag() {
     2> /dev/null                                        \
     || return `logError "Could not download latest release tag info"`
 
-    __DOWNLOAD_URL=$( "${PATH_JQ}" -r ".assets[0].browser_download_url" "${FILE_CURL_OUT}" )
+    __DOWNLOAD_URL=$( "${PATH_JQ}" -r ".assets[1].browser_download_url" "${FILE_CURL_OUT}" )
     echo ${__DOWNLOAD_URL}
 }
 
