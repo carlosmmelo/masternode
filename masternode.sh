@@ -12,18 +12,19 @@ set -e
 [ -z "${DIR_ROOT}"        ] && declare DIR_ROOT=$( pwd )
 [ -z "${PATH_JQ}"         ] && declare PATH_JQ="${DIR_ROOT}/jq"
 
-SYSTEM=`uname`
-if [[ $SYSTEM = "Darwin" ]]; then
-    declare IS_OSX="true"
-fi
-[ -z "${IS_OSX}" ] && declare IS_OSX="false"
-
 declare XSNCORE_URL="https://api.github.com/repos/X9Developers/XSN/releases/latest"
 declare FILE_CURL_OUT="curl.out"
 declare XSNCORE_PATH=${XSNCORE_PATH:-$HOME/.xsncore}
 
 declare -r DATE_STAMP="$(date +%y-%m-%d-%s)"
 declare -r SCRIPT_LOGFILE="/tmp/nodemaster_${DATE_STAMP}_out.log"
+
+CHECK_OS_TYPE=`uname`
+case ${CHECK_OS_TYPE} in
+Darwin ) CURR_OS_TYPE=osx;;
+Linux ) CURR_OS_TYPE=linux;;
+* ) echo "Unrecognized Operating System Type...defaulting to linux..."; CURR_OS_TYPE=linux;;
+esac
 
 
 # ======================================================================================================================
@@ -39,7 +40,7 @@ function setup_jq () {
     # ----------  Download JQ if not present  ----------
 
     if [ ! -f "${__PATH_JQ}" ]; then
-        if [ "${IS_OSX}" == "true" ]; then
+        if [ "${CURR_OS_TYPE}" == "osx" ]; then
             wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64 > /dev/null 2>&1 || return $( logError "Could not download jq" )
             mv jq-osx-amd64 "${__PATH_JQ}"
         else
@@ -59,7 +60,13 @@ function get_latest_released_tag() {
     2> /dev/null                                        \
     || return `logError "Could not download latest release tag info"`
 
-    __DOWNLOAD_URL=$( "${PATH_JQ}" -r ".assets[0].browser_download_url" "${FILE_CURL_OUT}" )
+    for asset in $( "${PATH_JQ}" -r '.assets[]|.browser_download_url' "${FILE_CURL_OUT}" );
+    do
+        if [[ ${asset} == *"${CURR_OS_TYPE}"* ]]; then
+            __DOWNLOAD_URL=${asset}
+        fi
+    done
+
     echo ${__DOWNLOAD_URL}
 }
 
@@ -73,16 +80,21 @@ function download_last_release_version () {
 }
 
 function update_xsn_with_latest_version () {
-    __COMPRESSED_NAME=$( "${PATH_JQ}" -r ".assets[0].name" "${FILE_CURL_OUT}" )
-    UNCOMPRESSED_NAME=$( echo "${__COMPRESSED_NAME//-linux64.tar.gz}")
-    tar xfvz ${__COMPRESSED_NAME}
-    cp ${UNCOMPRESSED_NAME}/bin/xsnd ${XSNCORE_PATH}
-    cp ${UNCOMPRESSED_NAME}/bin/xsn-cli ${XSNCORE_PATH}
-    chmod 777 ${XSNCORE_PATH}/xsn*
+    for asset in $( "${PATH_JQ}" -r '.assets[]|.name' "${FILE_CURL_OUT}" );
+    do
+        if [[ ${asset} == *"${CURR_OS_TYPE}"* ]]; then
+            __COMPRESSED_NAME=${asset}
+            UNCOMPRESSED_NAME=$( echo "${__COMPRESSED_NAME//-${CURR_OS_TYPE}64.tar.gz}")
+            tar xfvz ${__COMPRESSED_NAME}
+            cp ${UNCOMPRESSED_NAME}/bin/xsnd ${XSNCORE_PATH}
+            cp ${UNCOMPRESSED_NAME}/bin/xsn-cli ${XSNCORE_PATH}
+            chmod 777 ${XSNCORE_PATH}/xsn*
+        fi
+    done
 }
 
 function start () {
-    ${XSNCORE_PATH}/xsnd -reindex
+    ${XSNCORE_PATH}/xsnd -reindex &
 }
 
 function clean_up () {
@@ -96,9 +108,9 @@ function update () {
 
     get_latest_released_tag
 
-    stop_xsncore
-
     download_last_release_version
+
+    stop_xsncore
 
     update_xsn_with_latest_version
 
@@ -116,24 +128,24 @@ function create_sentinel_setup () {
 	# if code directory does not exists, proceed to clone sentinel repo
 	if [ ! -d ${XSNCORE_PATH}/sentinel ]; then
 	    echo "* Sentinel Repo NOT Present - *** Cloning Sentinel repo ***"
-		cd ${XSNCORE_PATH}                                          &>> ${SCRIPT_LOGFILE}
-		git clone https://github.com/carlosmmelo/sentinel sentinel  &>> ${SCRIPT_LOGFILE}
-		cd sentinel                                                 &>> ${SCRIPT_LOGFILE}
-		rm -f rm sentinel.conf                                      &>> ${SCRIPT_LOGFILE}
+		cd ${XSNCORE_PATH}                                          >> ${SCRIPT_LOGFILE}
+		git clone https://github.com/carlosmmelo/sentinel sentinel  >> ${SCRIPT_LOGFILE}
+		cd sentinel                                                 >> ${SCRIPT_LOGFILE}
+		rm -f rm sentinel.conf                                      >> ${SCRIPT_LOGFILE}
 	else
 		echo "* Sentinel Repo is Present - Updating the existing Sentinel GIT repo"
-		cd ${XSNCORE_PATH}/sentinel   &>> ${SCRIPT_LOGFILE}
-		git pull                      &>> ${SCRIPT_LOGFILE}
-		rm -f rm sentinel.conf        &>> ${SCRIPT_LOGFILE}
+		cd ${XSNCORE_PATH}/sentinel   >> ${SCRIPT_LOGFILE}
+		git pull                      >> ${SCRIPT_LOGFILE}
+		rm -f rm sentinel.conf        >> ${SCRIPT_LOGFILE}
 	fi
 
 	echo "* Create a python virtual environment and install sentinel requirements"
-	virtualenv --system-site-packages ${XSNCORE_PATH}/sentinelvenv      &>> ${SCRIPT_LOGFILE}
-	${XSNCORE_PATH}/sentinelvenv/bin/pip install -r requirements.txt    &>> ${SCRIPT_LOGFILE}
+	virtualenv --system-site-packages ${XSNCORE_PATH}/sentinelvenv      >> ${SCRIPT_LOGFILE}
+	${XSNCORE_PATH}/sentinelvenv/bin/pip install -r requirements.txt    >> ${SCRIPT_LOGFILE}
 
     echo "* Setting up Sentinel config file if not present"
     if [ ! -f "${XSNCORE_PATH}/sentinel/xsn_sentinel.conf" ]; then
-         echo "* Creating sentinel configuration for XSN Masternode"        &>> ${SCRIPT_LOGFILE}
+         echo "* Creating sentinel configuration for XSN Masternode"        >> ${SCRIPT_LOGFILE}
          echo "xsn_conf=${XSNCORE_PATH}/xsn.conf"                           > ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
          echo "network=mainnet"                                             >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
          echo "db_name=${XSNCORE_PATH}/sentinel/database/xsn_sentinel.db"   >> ${XSNCORE_PATH}/sentinel/xsn_sentinel.conf
