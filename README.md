@@ -15,6 +15,7 @@ git clone https://github.com/carlosmmelo/masternode.git
 2. CD into the cloned project and Execute the masternode script with the update argument to update:
 ```
 cd masternode
+git pull
 bash masternode.sh update
 ```
 
