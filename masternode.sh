@@ -93,7 +93,7 @@ function update_xsn_with_latest_version () {
 }
 
 function start () {
-    ${XSNCORE_PATH}/xsnd -reindex &
+    ${XSNCORE_PATH}/xsnd -reindex -daemon &
 }
 
 function clean_up () {
