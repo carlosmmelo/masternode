@@ -30,6 +30,21 @@ esac
 # FUNCTIONS
 # ======================================================================================================================
 
+function echoError () {
+     echo "[$(date +%Y-%m-%d\ %H:%M:%S)] $@" 1>&2
+#    echo "$@" 1>&2
+}
+
+function logError () {
+    local __ERROR_CODE=$?
+
+    [ -n "${2}" ] && __ERROR_CODE="${2}"
+
+    echoError "[ERROR] ${1} (err=${__ERROR_CODE})."
+
+    return ${__ERROR_CODE}
+}
+
 function setup_jq () {
     # ----------  Initialization  ----------
 
